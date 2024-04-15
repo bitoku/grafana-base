@@ -8,7 +8,11 @@ import logging
 from sqlalchemy.exc import IntegrityError
 
 # Configure logging
-logging.basicConfig(filename="./logs/app.log", level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    filename="./logs/app.log",
+    level=logging.INFO,
+    format='time="%(asctime)s" logger="%(name)s" level="%(levelname)s" message="%(message)s"'
+)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
