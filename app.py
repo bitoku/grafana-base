@@ -7,11 +7,30 @@ import threading
 import logging
 from sqlalchemy.exc import IntegrityError
 
-# Configure logging
-logging.basicConfig(filename="./logs/app.log", level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+from logging.handlers import RotatingFileHandler
+
+# Application Logger Setup
+app_log_handler = RotatingFileHandler('./logs/app.log', maxBytes=10000, backupCount=3)
+app_log_handler.setLevel(logging.INFO)
+app_log_handler.setFormatter(logging.Formatter(
+    'time="%(asctime)s" logger="%(name)s" level="%(levelname)s" message="%(message)s"'
+))
+app_logger = logging.getLogger('myapp')
+app_logger.setLevel(logging.INFO)
+app_logger.addHandler(app_log_handler)
+
+# Werkzeug Logger Setup
+werkzeug_log_handler = RotatingFileHandler('./logs/werkzeug.log', maxBytes=10000, backupCount=3)
+werkzeug_log_handler.setLevel(logging.INFO)
+werkzeug_log_handler.setFormatter(logging.Formatter(
+    'time="%(asctime)s" logger="%(name)s" level="%(levelname)s" message="%(message)s"'
+))
+werkzeug_logger = logging.getLogger('werkzeug')
+werkzeug_logger.setLevel(logging.INFO)
+werkzeug_logger.addHandler(werkzeug_log_handler)
 
 app = Flask(__name__)
+app.logger = app_logger  # Assign the custom app logger
 app.config['SECRET_KEY'] = 'plantsarecool1234'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///carnivorous_green_house.db'
 db = SQLAlchemy(app)
@@ -46,15 +65,15 @@ def signup():
         try:
             db.session.add(new_user)
             db.session.commit()
-            logger.info(f"New user created: {username}")
+            app.logger.info(f"New user created: {username}")
             return redirect(url_for('login'))
         except IntegrityError:
             db.session.rollback()  # Important to rollback the session to clean state
-            logger.error(f"Signup failed: Username '{username}' already exists.")
+            app.logger.error(f"Signup failed: Username '{username}' already exists.")
             return render_template('signup.html', error="That username is already taken, please choose another.", error_mode=error_mode)
         except Exception as e:
             db.session.rollback()
-            logger.exception("An unexpected error occurred during signup.")
+            app.logger.exception("An unexpected error occurred during signup.")
             return render_template('signup.html', error="An unexpected error occurred. Please try again.", error_mode=error_mode)
     return render_template('signup.html', error_mode=error_mode)
 
@@ -63,7 +82,7 @@ def login():
     error_mode = session.get('error_mode', False)  # Get the current error mode state
     if request.method == 'POST':
         if session.get('error_mode', False) and randint(0, 1):
-            logger.error("Login process failed unexpectedly.")
+            app.logger.error("Login process failed unexpectedly.")
             return 'Login Error', 500
 
         username = request.form['username']
@@ -79,7 +98,7 @@ def login():
 def logout():
     error_mode = session.get('error_mode', False)  # Get the current error mode state
     if session.get('error_mode', False) and randint(0, 1):
-        logger.error("Logout failed due to session error.")
+        app.logger.error("Logout failed due to session error.")
         return "Logout Error", 500
     
     session.pop('user_id', None)
@@ -102,14 +121,14 @@ def toggle_error_mode():
     current_mode = session.get('error_mode', False)
     session['error_mode'] = not current_mode  # Toggle the state
     session.modified = True  # Make sure the change is saved
-    logger.info(f"Error mode toggled to {'on' if session['error_mode'] else 'off'}.")
+    app.logger.info(f"Error mode toggled to {'on' if session['error_mode'] else 'off'}.")
     return redirect(request.referrer or url_for('index'))
 
 @socketio.on('add_plant')
 def handle_add_plant(json):
     user_id = session.get('user_id')
     if not user_id or (session.get('error_mode', False) and randint(0, 1)):
-        logger.error("Unauthorized or failed attempt to add plant.")
+        app.logger.error("Unauthorized or failed attempt to add plant.")
         emit('error', {'error': 'Failed to add plant due to server error'}, room=request.sid)
         return
     plant_name = json.get('plant_name')
@@ -118,7 +137,7 @@ def handle_add_plant(json):
     db.session.add(new_plant)
     db.session.commit()
     emit('new_plant', {'plant_id': new_plant.id, 'plant_name': new_plant.name, 'plant_type': new_plant.plant_type}, room=str(user_id))
-    logger.info(f"New plant {plant_name} added successfully.")
+    app.logger.info(f"New plant {plant_name} added successfully.")
 
 
 active_users = {}
@@ -132,14 +151,14 @@ def handle_connect():
             'error_mode': session.get('error_mode', False)
         }
         join_room(str(user_id))
-        logger.info(f"User {user_id} connected and joined their room with error mode {active_users[user_id]['error_mode']}.")
+        app.logger.info(f"User {user_id} connected and joined their room with error mode {active_users[user_id]['error_mode']}.")
 
 @socketio.on('disconnect')
 def on_disconnect():
     user_id = session.get('user_id')
     if user_id in active_users:
         del active_users[user_id]
-        logger.info(f"User {user_id} disconnected and was removed from active list.")
+        app.logger.info(f"User {user_id} disconnected and was removed from active list.")
 
 def simulate_plant_data():
     while True:
@@ -149,7 +168,7 @@ def simulate_plant_data():
                 try:
                     if user_info['error_mode'] and randint(0, 1):
                         # Log an error message and continue without sending data
-                        logger.error(f"Failed to send data to: {user_id}: Will retry later")
+                        app.logger.warn(f"Failed to send data to: {user_id}: Will retry later")
                         continue
 
                     plants = Plant.query.filter_by(user_id=user_id).all()
@@ -161,9 +180,9 @@ def simulate_plant_data():
                             'number_of_insects': randint(0, 10)
                         }
                         socketio.emit('update_plant', {'plant_id': plant.id, 'data': fake_data}, room=str(user_id))
-                        logger.debug(f"Simulated data for plant {plant.id} sent to user {user_id}")
+                        app.logger.debug(f"Simulated data for plant {plant.id} sent to user {user_id}")
                 except Exception as e:
-                    logger.error(f"Error in simulation thread for user {user_id}: {str(e)}")
+                    app.logger.error(f"Error in simulation thread for user {user_id}: {str(e)}")
 
 
 if __name__ == '__main__':
