@@ -20,7 +20,7 @@ services:
       - carnivorous-garden
       - loki
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:main-e9b6ce9
     ports:
       - "3100:3100"
     volumes:
