@@ -1,26 +1,18 @@
 version: '3'
 services:
-  carnivorous-garden:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports: 
-      - 5005:5000
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
     volumes:
-      - ./logs:/app/logs/
-  alloy:
-    image: grafana/alloy:latest
+      - ./otel-config.yaml:/etc/otel/config.yaml
+    command:
+      - '--config=/etc/otel/config.yaml'
     ports:
-      - 12345:12345
-    volumes:
-      - ./alloy-config.alloy:/etc/alloy/config.alloy
-      - ./logs:/tmp/app-logs/
-    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+      - "4317:4317" #grpc
+      - "4318:4318" #http
     depends_on:
-      - carnivorous-garden
       - loki
   loki:
-    image: grafana/loki:main-e9b6ce9
+    image: grafana/loki:main
     ports:
       - "3100:3100"
     volumes:
