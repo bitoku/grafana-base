@@ -9,6 +9,8 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+    networks:
+      - loki
 
   plant_service:
     build: .
@@ -18,6 +20,8 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+    networks:
+      - loki
 
   simulation_service:
     build: .
@@ -28,6 +32,8 @@ services:
       - db
       - plant_service
     restart: unless-stopped
+    networks:
+      - loki
 
   websocket_service:
     build: .
@@ -35,7 +41,9 @@ services:
     ports:
       - "5004:5004"
     restart: unless-stopped
-  
+    networks:
+      - loki
+
   bug_service:
     build: .
     command: python bug_service.py
@@ -44,6 +52,8 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+    networks:
+      - loki
 
   main_app:
     build: .
@@ -56,6 +66,8 @@ services:
       - simulation_service
       - websocket_service
     restart: unless-stopped
+    networks:
+      - loki
 
   db:
     image: postgres:12
@@ -73,6 +85,13 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    networks:
+      - loki
 
 volumes:
   pgdata:
+
+networks:
+    loki:
+      name: Loki
+      external: true

@@ -6,6 +6,11 @@ import logging
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import requests
 import threading
+from loggingfw import CustomLogFW
+
+logFW = CustomLogFW(service_name='simulation_service', instance_id='1')
+handler = logFW.setup_logging()
+logging.getLogger().addHandler(handler)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'

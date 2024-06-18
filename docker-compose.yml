@@ -11,6 +11,8 @@ services:
       - "4318:4318" #http
     depends_on:
       - loki
+    networks:
+      - loki
   loki:
     image: grafana/loki:main
     ports:
@@ -18,6 +20,8 @@ services:
     volumes:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - loki
   grafana:
     image: grafana/grafana:11.0.0
     environment:
@@ -30,8 +34,12 @@ services:
       - 3000:3000/tcp
     volumes:
       - ./grafana:/etc/grafana/provisioning
+    networks:
+      - loki
     
-    
+networks:
+    loki:
+      name: Loki
     
 
 
