@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3'
 
 services:
   user_service:
@@ -8,6 +8,7 @@ services:
       - "5001:5001"
     depends_on:
       - db
+    restart: unless-stopped
 
   plant_service:
     build: .
@@ -16,6 +17,7 @@ services:
       - "5002:5002"
     depends_on:
       - db
+    restart: unless-stopped
 
   simulation_service:
     build: .
@@ -25,12 +27,14 @@ services:
     depends_on:
       - db
       - plant_service
+    restart: unless-stopped
 
   websocket_service:
     build: .
     command: python websocket_service.py
     ports:
       - "5004:5004"
+    restart: unless-stopped
   
   bug_service:
     build: .
@@ -39,6 +43,7 @@ services:
       - "5010:5010"
     depends_on:
       - db
+    restart: unless-stopped
 
   main_app:
     build: .
@@ -50,6 +55,7 @@ services:
       - plant_service
       - simulation_service
       - websocket_service
+    restart: unless-stopped
 
   db:
     image: postgres:12
@@ -66,6 +72,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
 volumes:
   pgdata:
