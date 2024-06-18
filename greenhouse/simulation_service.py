@@ -11,6 +11,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'
 socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True)
 
+BUGS = False
+
 PLANT_SERVICE_URL = 'http://plant_service:5002'
 
 active_users = {}
@@ -36,6 +38,8 @@ def start_simulation():
 @app.route('/trigger_bug', methods=['GET'])
 def bug():
     logging.error("Triggering bug...")
+    global BUGS
+    BUGS = True
     return "Bug triggered", 200
 
 @socketio.on('connect')
@@ -72,8 +76,13 @@ def simulate_plant_data(user_id):
                         'water_level': randint(1, 10),
                         'number_of_insects': randint(0, 10)
                     }
-                    socketio.emit('update_plant', {'plant_id': plant['id'], 'data': fake_data}, room=str(user_id))
-                    logging.debug(f"Simulated data for plant {plant['id']} sent to user {user_id}")
+                    global BUGS
+                    if BUGS == True:
+                            logging.error("What a nasty bug! It flew into the simulation service and stopped producing sensor readings.")
+                            BUGS = False
+                    else:
+                        socketio.emit('update_plant', {'plant_id': plant['id'], 'data': fake_data}, room=str(user_id))
+                        logging.debug(f"Simulated data for plant {plant['id']} sent to user {user_id}")
             else:
                 logging.error(f"Failed to fetch plants for user {user_id}. Status code: {response.status_code}")
         except Exception as e:

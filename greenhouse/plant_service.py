@@ -10,7 +10,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db:5432/plan
 db = SQLAlchemy(app)
 
 SIMULATION_SERVICE_URL = 'http://simulation_service:5003'
-bugs = False
+BUGS = False
 
 class Plant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -21,9 +21,10 @@ class Plant(db.Model):
 
 @app.route('/plants', methods=['POST'])
 def add_plant():
-    if bugs == True:
+    global BUGS
+    if BUGS == True:
         logging.error("What a nasty bug! It flew into the plant service and stopped adding plants.")
-        bugs = False
+        BUGS = False
         return "Failed to add plant", 500
     data = request.json
     new_plant = Plant(
@@ -44,9 +45,10 @@ def add_plant():
 
 @app.route('/plants/<int:user_id>', methods=['GET'])
 def get_plants(user_id):
-    if bugs == True:
+    global BUGS
+    if BUGS == True:
         logging.error("What a nasty bug! It flew into the plant service and stopped the list of plants being returned.")
-        bugs = False
+        BUGS = False
         return "Failed to add plant", 500
     
     plants = Plant.query.filter_by(user_id=user_id).all()
@@ -60,8 +62,8 @@ def get_plants(user_id):
 @app.route('/trigger_bug', methods=['GET'])
 def bug():
     logging.error("Triggering bug...")
-    global bugs
-    bugs = True
+    global BUGS
+    BUGS = True
     return "Bug triggered", 200
 
 

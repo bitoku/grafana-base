@@ -12,10 +12,13 @@ socketio = SocketIO(app, cors_allowed_origins="*", engineio_logger=True)
 PLANT_SERVICE_URL = 'http://plant_service:5002'
 
 active_users = {}
+BUGS = False
 
 @app.route('/trigger_bug', methods=['GET'])
 def bug():
     logging.error("Triggering bug...")
+    global BUGS
+    BUGS = True
     return "Bug triggered", 200
 
 @socketio.on('connect')
@@ -38,6 +41,12 @@ def on_disconnect():
 
 @socketio.on('add_plant')
 def handle_add_plant(data):
+    global BUGS
+    if BUGS == True:
+        logging.error("What a nasty bug! It flew into the websocket service and stopped the request to add plant.")
+        BUGS = False
+        return "Failed to add plant"
+    
     user_id = request.args.get('user_id')
     if not user_id or user_id not in active_users:
         emit('error', {'error': 'Unauthorized or failed attempt to add plant'})

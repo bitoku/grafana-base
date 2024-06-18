@@ -11,6 +11,8 @@ app.config['SECRET_KEY'] = 'plantsarecool1234'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db:5432/user_service_db'
 db = SQLAlchemy(app)
 
+BUGS = False
+
 class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
@@ -23,6 +25,12 @@ def signup():
     password = request.form['password']
     hashed_password = generate_password_hash(password)
     new_user = User(username=username, password_hash=hashed_password)
+
+    global BUGS
+    if BUGS == True:
+        logging.error("What a nasty bug! It flew into the user service and stopped the user being created.")
+        BUGS = False
+        return "Failed to create user", 500
     try:
         db.session.add(new_user)
         db.session.commit()
@@ -39,6 +47,12 @@ def signup():
 
 @app.route('/login', methods=['POST'])
 def login():
+    global BUGS
+    if BUGS == True:
+        logging.error("What a nasty bug! It flew into the user service and stopped the user being created.")
+        BUGS = False
+        return "Failed to login", 500
+    
     username = request.form['username']
     password = request.form['password']
     user = User.query.filter_by(username=username).first()
@@ -63,6 +77,8 @@ def get_user(user_id):
 @app.route('/trigger_bug', methods=['GET'])
 def bug():
     logging.error("Triggering bug...")
+    global BUGS
+    BUGS = True
     return "Bug triggered", 200
 
 if __name__ == '__main__':

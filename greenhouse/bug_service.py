@@ -31,7 +31,7 @@ def bug_mode_worker():
                     logging.error(f"Failed to trigger bug in {service_url}")
             except Exception as e:
                 logging.error(f"Error triggering bug in {service_url}: {str(e)}")
-        time.sleep(5)  # Trigger a bug every 5 seconds
+        time.sleep(10)  # Trigger a bug every 10 seconds
 
 @app.route('/toggle_bug_mode', methods=['POST'])
 def toggle_bug_mode():
