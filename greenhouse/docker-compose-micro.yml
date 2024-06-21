@@ -92,5 +92,5 @@ volumes:
   pgdata:
 
 networks:
-    loki:
-      external: true
+    loki-fundamentals_loki:
+     external: true
