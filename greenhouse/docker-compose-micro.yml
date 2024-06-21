@@ -93,5 +93,4 @@ volumes:
 
 networks:
     loki:
-      name: Loki
       external: true

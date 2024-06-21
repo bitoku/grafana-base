@@ -40,7 +40,7 @@ services:
     
 networks:
     loki:
-      name: Loki
+
     
 
 
