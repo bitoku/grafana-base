@@ -57,6 +57,21 @@
     <!-- Include Bootstrap Switch JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
     <script type="text/javascript">
+        
+        function getWebSocketUrl(port) {
+            const baseUrl = location.protocol + '//' + document.domain + ':' + port;
+
+            if (location.hostname.includes('spch.r.killercoda.com')) {
+                const parts = location.hostname.split('-');
+                const uniqueId = parts[0];
+                const ip = parts.slice(1, -1).join('-');
+                const domain = 'spch.r.killercoda.com';
+                return `https://${uniqueId}-${ip}-${port}.${domain}`;
+            }
+
+            return baseUrl;
+        }
+
         $(document).ready(function() {
             // Initialize the switch
             $("[data-toggle='switch']").bootstrapSwitch();
@@ -77,7 +92,7 @@
                 });
             });
 
-            var socket = io.connect(location.protocol + '//' + document.domain + ':' + "5004", {
+            var socket = io.connect(getWebSocketUrl("5004"), {
                 query: 'user_id={{ user.id }}'
             });
 
@@ -109,7 +124,7 @@
                 container.appendChild(newPlant);
             });
 
-            var socket_sim = io.connect(location.protocol + '//' + document.domain + ':' + "5003", {
+            var socket_sim = io.connect(getWebSocketUrl("5003"), {
                 query: 'user_id={{ user.id }}'
             });
 
