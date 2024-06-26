@@ -1,6 +1,6 @@
 # Carnivorous Green House
 
-![Carnivorous Green House](./static/index_image.png)
+![Carnivorous Green House](./greenhouse/static/index_image.png)
 
 ## Description
 
