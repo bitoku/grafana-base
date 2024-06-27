@@ -1,20 +1,54 @@
 # Import the function to set the global logger provider from the OpenTelemetry logs module.
 from opentelemetry._logs import set_logger_provider
 
-# Import the OTLPLogExporter class from the OpenTelemetry gRPC log exporter module.
-from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
-
 # Import the LoggerProvider and LoggingHandler classes from the OpenTelemetry SDK logs module.
-from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
+from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler, LogRecord
+
+from opentelemetry.exporter.otlp.proto.common._log_encoder import encode_logs
 
 # Import the BatchLogRecordProcessor class from the OpenTelemetry SDK logs export module.
-from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
+from opentelemetry.sdk._logs.export import  LogExporter, LogExportResult, SimpleLogRecordProcessor
 
 # Import the Resource class from the OpenTelemetry SDK resources module.
 from opentelemetry.sdk.resources import Resource
 
-# Import the logging module.
-import logging
+# Import the logging and json module.
+import logging, json
+
+from typing import Sequence
+
+
+from confluent_kafka import Producer
+
+
+
+
+class KafkaLogExporter(LogExporter):
+    def __init__(self, kafka_broker, kafka_topic):
+        self.producer = Producer({'bootstrap.servers': kafka_broker})
+        self.kafka_topic = kafka_topic
+
+    def export(self, batch: Sequence[LogRecord]) -> LogExportResult:
+        try:
+            serialized_data = encode_logs(batch).SerializeToString()
+        except Exception as e:
+                print(f"Failed to convert record to json: {e}")
+                return LogExportResult.FAILURE
+            
+        self.producer.produce(self.kafka_topic, value=serialized_data, callback=self.delivery_callback)
+        self.producer.flush()
+        return LogExportResult.SUCCESS
+    
+    def delivery_callback(self,err, msg):
+        if err:
+            print('%% Message failed delivery: %s\n' % err)
+        else:
+            print('%% Message delivered to %s [%d] @ %d\n' %
+                             (msg.topic(), msg.partition(), msg.offset()))
+
+    def shutdown(self):
+        self.producer.flush()
+
 
 class CustomLogFW:
     """
@@ -39,7 +73,7 @@ class CustomLogFW:
             )
         )
 
-    def setup_logging(self):
+    def setup_logging(self, kafka_broker="kafka:9092", kafka_topic="logs"):
         """
         Set up the logging configuration.
 
@@ -49,10 +83,11 @@ class CustomLogFW:
         set_logger_provider(self.logger_provider)
 
         # Create an instance of OTLPLogExporter with insecure connection.
-        exporter = OTLPLogExporter(endpoint="http://alloy:4317", insecure=True)
+        # Create an instance of KafkaLogExporter.
+        exporter = KafkaLogExporter(kafka_broker=kafka_broker, kafka_topic=kafka_topic)
 
         # Add a BatchLogRecordProcessor to the logger provider with the exporter.
-        self.logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
+        self.logger_provider.add_log_record_processor(SimpleLogRecordProcessor(exporter))
 
         # Create a LoggingHandler with the specified logger provider and log level set to NOTSET.
         handler = LoggingHandler(level=logging.NOTSET, logger_provider=self.logger_provider)
