@@ -4,7 +4,4 @@ datasources:
   type: loki
   access: proxy
   url: http://loki:3100
-- name: Loki-otlp
-  type: loki
-  access: proxy
-  url: http://loki-otlp:3100
+

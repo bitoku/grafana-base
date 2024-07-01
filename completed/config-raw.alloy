@@ -7,6 +7,8 @@ loki.source.kafka "raw" {
   forward_to             = [loki.write.http.receiver]
   relabel_rules          = loki.relabel.kafka.rules
   version                = "2.0.0"
+  labels                = {service_name = "raw_kafka"}
+
 }
 
 loki.relabel "kafka" {
