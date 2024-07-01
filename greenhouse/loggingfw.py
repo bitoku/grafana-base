@@ -24,9 +24,8 @@ from confluent_kafka import Producer
 
 
 class KafkaLogExporter(LogExporter):
-    def __init__(self, kafka_broker, kafka_topic):
+    def __init__(self, kafka_broker):
         self.producer = Producer({'bootstrap.servers': kafka_broker})
-        self.kafka_topic = kafka_topic
 
     def export(self, batch: Sequence[LogRecord]) -> LogExportResult:
         try:
@@ -34,8 +33,22 @@ class KafkaLogExporter(LogExporter):
         except Exception as e:
                 print(f"Failed to convert record to json: {e}")
                 return LogExportResult.FAILURE
-            
-        self.producer.produce(self.kafka_topic, value=serialized_data, callback=self.delivery_callback)
+        
+        # Send OTLP logs to the otlp kafka receiver (alloy)
+        self.producer.produce("otlp", value=serialized_data, callback=self.delivery_callback)
+        
+        # Send raw json logs to the loki kafka receiver (alloy)
+        for record in batch:
+            try:
+                record = record.__dict__
+                print(record, flush=True)
+                entry = record["log_record"].to_json()
+                print(entry, flush=True)
+                self.producer.produce("loki", value=entry, callback=self.delivery_callback)
+            except Exception as e:
+                print(f"Failed to convert record to json: {e}")
+                return LogExportResult.FAILURE
+
         self.producer.flush()
         return LogExportResult.SUCCESS
     
@@ -73,7 +86,7 @@ class CustomLogFW:
             )
         )
 
-    def setup_logging(self, kafka_broker="kafka:9092", kafka_topic="logs"):
+    def setup_logging(self, kafka_broker="kafka:9092"):
         """
         Set up the logging configuration.
 
@@ -84,7 +97,7 @@ class CustomLogFW:
 
         # Create an instance of OTLPLogExporter with insecure connection.
         # Create an instance of KafkaLogExporter.
-        exporter = KafkaLogExporter(kafka_broker=kafka_broker, kafka_topic=kafka_topic)
+        exporter = KafkaLogExporter(kafka_broker=kafka_broker)
 
         # Add a BatchLogRecordProcessor to the logger provider with the exporter.
         self.logger_provider.add_log_record_processor(SimpleLogRecordProcessor(exporter))
