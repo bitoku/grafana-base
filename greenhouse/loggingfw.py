@@ -1,20 +1,7 @@
-# Import the function to set the global logger provider from the OpenTelemetry logs module.
-from opentelemetry._logs import set_logger_provider
-
-# Import the OTLPLogExporter class from the OpenTelemetry gRPC log exporter module.
-from opentelemetry.exporter.otlp.proto.grpc._log_exporter import OTLPLogExporter
-
-# Import the LoggerProvider and LoggingHandler classes from the OpenTelemetry SDK logs module.
-from opentelemetry.sdk._logs import LoggerProvider, LoggingHandler
-
-# Import the BatchLogRecordProcessor class from the OpenTelemetry SDK logs export module.
-from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-
-# Import the Resource class from the OpenTelemetry SDK resources module.
-from opentelemetry.sdk.resources import Resource
-
-# Import the logging module.
 import logging
+from fluent import handler
+
+
 
 class CustomLogFW:
     """
@@ -22,6 +9,9 @@ class CustomLogFW:
     """
     
     def __init__(self, service_name, instance_id):
+        self.service_name = service_name
+        self.instance_id = instance_id
+
         """
         Initialize the CustomLogFW with a service name and instance ID.
 
@@ -30,14 +20,19 @@ class CustomLogFW:
         """
         # Create an instance of LoggerProvider with a Resource object that includes
         # service name and instance ID, identifying the source of the logs.
-        self.logger_provider = LoggerProvider(
-            resource=Resource.create(
-                {
-                    "service.name": service_name,
-                    "service.instance.id": instance_id,
-                }
-            )
-        )
+        self.custom_format = {
+            'host': '%(hostname)s',
+            'where': '%(module)s.%(funcName)s',
+            'type': '%(levelname)s',
+            'stack_trace': '%(exc_text)s',
+            'service': self.service_name,
+            'instance_id': self.instance_id,
+        }
+        self.h = handler.FluentHandler(f"service.{service_name}", host='fluentd', port=24224)
+
+    def __del__(self):
+        self.h.close()
+
 
     def setup_logging(self):
         """
@@ -45,16 +40,9 @@ class CustomLogFW:
 
         :return: LoggingHandler instance configured with the logger provider.
         """
-        # Set the created LoggerProvider as the global logger provider.
-        set_logger_provider(self.logger_provider)
+    
+        formatter = handler.FluentRecordFormatter(self.custom_format)
+        self.h.setFormatter(formatter)
 
-        # Create an instance of OTLPLogExporter with insecure connection.
-        exporter = OTLPLogExporter(endpoint="http://alloy:4317", insecure=True)
 
-        # Add a BatchLogRecordProcessor to the logger provider with the exporter.
-        self.logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
-
-        # Create a LoggingHandler with the specified logger provider and log level set to NOTSET.
-        handler = LoggingHandler(level=logging.NOTSET, logger_provider=self.logger_provider)
-
-        return handler
+        return self.h

@@ -17,6 +17,4 @@ Werkzeug==3.0.2
 wsproto==1.2.0
 psycopg2
 requests
-opentelemetry-distro 
-opentelemetry-exporter-otlp
-
+fluent-logger
