@@ -9,8 +9,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'
 
 logFW = CustomLogFW(service_name='main_app', instance_id='1')
-handler = logFW.setup_logging()
-logging.getLogger().addHandler(handler)
+logging = logFW.setup_logging()
+
 
 USER_SERVICE_URL = 'http://user_service:5001'
 PLANT_SERVICE_URL = 'http://plant_service:5002'

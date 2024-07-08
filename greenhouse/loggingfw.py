@@ -29,9 +29,11 @@ class CustomLogFW:
             'instance_id': self.instance_id,
         }
         self.h = handler.FluentHandler(f"service.{service_name}", host='fluentd', port=24224)
+        self.h2 = handler.FluentHandler(f"service.{service_name}", host='fluent-bit', port=24224)
 
     def __del__(self):
         self.h.close()
+        self.h2.close()
 
 
     def setup_logging(self):
@@ -40,9 +42,18 @@ class CustomLogFW:
 
         :return: LoggingHandler instance configured with the logger provider.
         """
+
+        
     
         formatter = handler.FluentRecordFormatter(self.custom_format)
         self.h.setFormatter(formatter)
+        self.h2.setFormatter(formatter)
 
 
-        return self.h
+        logger = logging.getLogger()
+        logger.setLevel(logging.DEBUG)  # Set the desired logging level
+        
+        logger.addHandler(self.h)
+        logger.addHandler(self.h2)  # Add both handlers to the logger
+        
+        return logger

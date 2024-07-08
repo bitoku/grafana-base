@@ -8,8 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from loggingfw import CustomLogFW
 
 logFW = CustomLogFW(service_name='user_service', instance_id='1')
-handler = logFW.setup_logging()
-logging.getLogger().addHandler(handler)
+logging = logFW.setup_logging()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'
