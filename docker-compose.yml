@@ -8,7 +8,6 @@ services:
       - "-p"
       - "/fluentd/plugins"
     environment:
-      LOKI_URL: http://loki:3100
       FLUENTD_CONF: fluentd.conf
     volumes:
       - ./fluentd.conf:/fluentd/etc/fluentd.conf
