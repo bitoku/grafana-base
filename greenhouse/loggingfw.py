@@ -49,7 +49,7 @@ class CustomLogFW:
         set_logger_provider(self.logger_provider)
 
         # Create an instance of OTLPLogExporter with insecure connection.
-        exporter = OTLPLogExporter(endpoint="http://alloy:4317", insecure=True)
+        exporter = OTLPLogExporter(endpoint="otel-collector:4317", insecure=True)
 
         # Add a BatchLogRecordProcessor to the logger provider with the exporter.
         self.logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
