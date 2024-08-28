@@ -1,27 +1,8 @@
 version: '3'
 services:
-  fluentd:
-    image: grafana/fluent-plugin-loki:main
-    command:
-      - "fluentd"
-      - "-v"
-      - "-p"
-      - "/fluentd/plugins"
-    environment:
-      FLUENTD_CONF: fluentd.conf
-    volumes:
-      - ./fluentd.conf:/fluentd/etc/fluentd.conf
-    depends_on:
-      - loki
-    networks:
-      - loki
   fluent-bit:
-    image: grafana/fluent-bit-plugin-loki:main
-    command:
-      - "-e"
-      - "/fluent-bit/bin/out_grafana_loki.so"
-      - --workdir=/fluent-bit/etc
-      - --config=/fluent-bit/etc/conf/fluent-bit.conf
+    image: fluent/fluent-bit:latest
+    command: /fluent-bit/bin/fluent-bit --config=/fluent-bit/etc/conf/fluent-bit.conf
     volumes:
       - ./fluent-bit.conf:/fluent-bit/etc/conf/fluent-bit.conf
       - ./logmap.json:/fluent-bit/etc/conf/logmap.json
