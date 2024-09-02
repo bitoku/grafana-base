@@ -19,7 +19,7 @@ services:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
   grafana:
-    image: grafana/grafana:11.0.0
+    image: grafana/grafana:latest
     environment:
       - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
       - GF_AUTH_ANONYMOUS_ENABLED=true
