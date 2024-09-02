@@ -15,7 +15,7 @@ services:
     networks:
       - loki
   loki:
-    image: grafana/loki:latest
+    image: grafana/loki:main
     ports:
       - "3100:3100"
     volumes:
