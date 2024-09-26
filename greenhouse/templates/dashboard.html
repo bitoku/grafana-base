@@ -61,25 +61,39 @@
         function getWebSocketUrl(port) {
             const baseUrl = location.protocol + '//' + document.domain + ':' + port;
 
+            // Handling for 'spch.r.killercoda.com'
             if (location.hostname.includes('spch.r.killercoda.com')) {
                 const parts = location.hostname.split('-');
-                const uniqueId = parts[0];
-                const ip = parts.slice(1, -1).join('-');
-                const domain = 'spch.r.killercoda.com';
-                return `https://${uniqueId}-${ip}-${port}.${domain}`;
+                if (parts.length >= 3) {
+                    const uniqueId = parts[0];  // First part before the first dash
+                    const ip = parts.slice(1, -1).join('-');  // All parts between first and last dash
+                    const domain = 'spch.r.killercoda.com';
+                    return `https://${uniqueId}-${ip}-${port}.${domain}`;
+                } else {
+                    console.error("Hostname format is unexpected for spch.r.killercoda.com:", location.hostname);
+                    return baseUrl;
+                }
             }
-
+            // https://loki-5005-xq7lvkoy7xlq.env.play.instruqt.com/
+            // Handling for 'play.instruqt.com'
             if (location.hostname.includes('play.instruqt.com')) {
                 const parts = location.hostname.split('-');
-                const demo = parts[0];  // e.g., loki-demo-docker
-                const portFromHostname = parts[3];  // e.g., 5005
-                const uniqueId = parts.slice(4).join('-');  // e.g., ztllrif8qarm
-                const domain = 'env.play.instruqt.com';
-                return `https://${demo}-${port}-${uniqueId}.${domain}`;
+                if (parts.length >= 3) {
+                    const host = parts[0];  // e.g., loki
+                    const portIdentifier = parts[1];  // e.g., 5005
+                    const temp = parts[2].split('.');
+                    const uniqueId = temp[0];  // e.g., dxurxslchrgt
+                    const domain = 'instruqt.io';
+                    return `https://${host}.${uniqueId}.${domain}:${port}`;
+                } else {
+                    console.error("Hostname format is unexpected for play.instruqt.com:", location.hostname);
+                    return baseUrl;
+                }
             }
 
-            return baseUrl;
+            return baseUrl;  // Fallback for other domains
         }
+
 
         $(document).ready(function() {
             // Initialize the switch
