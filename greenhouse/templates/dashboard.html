@@ -69,6 +69,15 @@
                 return `https://${uniqueId}-${ip}-${port}.${domain}`;
             }
 
+            if (location.hostname.includes('play.instruqt.com')) {
+                const parts = location.hostname.split('-');
+                const demo = parts[0];  // e.g., loki-demo-docker
+                const portFromHostname = parts[3];  // e.g., 5005
+                const uniqueId = parts.slice(4).join('-');  // e.g., ztllrif8qarm
+                const domain = 'env.play.instruqt.com';
+                return `https://${demo}-${port}-${uniqueId}.${domain}`;
+            }
+
             return baseUrl;
         }
 
