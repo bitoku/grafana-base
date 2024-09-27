@@ -115,7 +115,7 @@
                 });
             });
 
-            var socket = io.connect(getWebSocketUrl("5004"), {
+            var socket = io.connect(getWebSocketUrl("5443"), {
                 query: 'user_id={{ user.id }}'
             });
 
@@ -147,7 +147,7 @@
                 container.appendChild(newPlant);
             });
 
-            var socket_sim = io.connect(getWebSocketUrl("5003"), {
+            var socket_sim = io.connect(getWebSocketUrl("6443"), {
                 query: 'user_id={{ user.id }}'
             });
 
