@@ -27,7 +27,7 @@ services:
     build: .
     command: python simulation_service.py
     ports:
-      - "5003:5003"
+      - "5443:5003"
     depends_on:
       - db
       - plant_service
@@ -39,7 +39,7 @@ services:
     build: .
     command: python websocket_service.py
     ports:
-      - "5004:5004"
+      - "6443:5004"
     restart: unless-stopped
     networks:
       - loki-fundamentals_loki
