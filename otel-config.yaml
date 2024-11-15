@@ -1,9 +1,42 @@
+extensions:
+  basicauth/client:
+    client_auth: 
+      username: "8"
+      password: "="
+
 # Receivers
-
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        
 # Processors
-
+processors:
+  batch:
 
 # Exporters
-
+exporters:
+  otlphttp/logs:
+    endpoint: "https://otlp-gateway-prod-eu-west-2.grafana.net/otlp"
+    tls:
+      insecure: true
+    auth:
+      authenticator: basicauth/client
+    encoding: json
+    
       
 # Pipelines
+service:
+  extensions: [basicauth/client]
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/logs]
+  telemetry:
+    logs:
+      level: debug
+      encoding: json
