@@ -61,7 +61,13 @@
         function getWebSocketUrl(port) {
             const baseUrl = location.protocol + '//' + document.domain + ':' + port;
 
-            if (location.hostname.includes('spch.r.killercoda.com')) {
+            if (location.hostname.includes('saci.r.killercoda.com') ) {
+                const parts = location.hostname.split('-');
+                const uniqueId = parts[0];
+                const ip = parts.slice(1, -1).join('-');
+                const domain = 'saci.r.killercoda.com';
+                return `https://${uniqueId}-${ip}-${port}.${domain}`;
+            } else if (location.hostname.includes('spch.r.killercoda.com')) {
                 const parts = location.hostname.split('-');
                 const uniqueId = parts[0];
                 const ip = parts.slice(1, -1).join('-');
@@ -71,7 +77,6 @@
 
             return baseUrl;
         }
-
         $(document).ready(function() {
             // Initialize the switch
             $("[data-toggle='switch']").bootstrapSwitch();
