@@ -4,11 +4,9 @@ from flask import Flask, request
 from flask_socketio import SocketIO, emit, join_room, leave_room
 import logging
 import requests
-from loggingfw import CustomLogFW
 
-logFW = CustomLogFW(service_name='websocket_service', instance_id='1')
-handler = logFW.setup_logging()
-logging.getLogger().addHandler(handler)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.INFO)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'

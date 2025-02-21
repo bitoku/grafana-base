@@ -4,11 +4,9 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import logging
 import requests
-from loggingfw import CustomLogFW
 
-logFW = CustomLogFW(service_name='plant_service', instance_id='1')
-handler = logFW.setup_logging()
-logging.getLogger().addHandler(handler)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.INFO)
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db:5432/plant_service_db'

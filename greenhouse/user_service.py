@@ -5,11 +5,9 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import logging
 from sqlalchemy.exc import IntegrityError
-from loggingfw import CustomLogFW
 
-logFW = CustomLogFW(service_name='user_service', instance_id='1')
-handler = logFW.setup_logging()
-logging.getLogger().addHandler(handler)
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.INFO)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'

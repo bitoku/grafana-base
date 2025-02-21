@@ -3,14 +3,12 @@
 from flask import Flask, render_template, session, redirect, url_for, request, jsonify
 import requests
 import logging
-from loggingfw import CustomLogFW
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.INFO)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'plantsarecool1234'
-
-logFW = CustomLogFW(service_name='main_app', instance_id='1')
-handler = logFW.setup_logging()
-logging.getLogger().addHandler(handler)
 
 USER_SERVICE_URL = 'http://user_service:5001'
 PLANT_SERVICE_URL = 'http://plant_service:5002'
