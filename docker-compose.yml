@@ -1,11 +1,12 @@
-version: '3'
 services:
   fluent-bit:
     image: fluent/fluent-bit:latest
-    command: /fluent-bit/bin/fluent-bit --config=/fluent-bit/etc/conf/fluent-bit.conf
+    command: /fluent-bit/bin/fluent-bit --config=/fluent-bit/etc/fluent-bit.conf
     volumes:
-      - ./fluent-bit.conf:/fluent-bit/etc/conf/fluent-bit.conf
-      - ./logmap.json:/fluent-bit/etc/conf/logmap.json
+      - ./fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./parsers.conf:/fluent-bit/etc/my_parsers.conf
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/log:/var/log
     depends_on:
       - loki
     networks:
