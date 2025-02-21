@@ -40,8 +40,6 @@ services:
       - GF_AUTH_BASIC_ENABLED=false
     ports:
       - 3000:3000/tcp
-    volumes:
-      - ./grafana:/etc/grafana/provisioning
     entrypoint:
        - sh
        - -euc
