@@ -21,6 +21,7 @@ loki.source.docker "getting_started" {
 	refresh_interval = "5s"
 }
 
+
 loki.write "getting_started" {
 	endpoint {
 		url       = "http://loki:3100/loki/api/v1/push"

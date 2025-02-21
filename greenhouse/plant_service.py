@@ -5,6 +5,11 @@ from flask_sqlalchemy import SQLAlchemy
 import logging
 import requests
 
+logging.basicConfig(
+    format='ts=%(asctime)s,%(msecs)03d level=%(levelname)s line=%(lineno)d msg="%(message)s"',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.INFO)
 

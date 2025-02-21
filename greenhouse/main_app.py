@@ -4,6 +4,11 @@ from flask import Flask, render_template, session, redirect, url_for, request, j
 import requests
 import logging
 
+logging.basicConfig(
+    format='ts=%(asctime)s,%(msecs)03d level=%(levelname)s line=%(lineno)d msg="%(message)s"',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.INFO)
 

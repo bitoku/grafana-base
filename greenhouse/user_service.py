@@ -6,6 +6,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import logging
 from sqlalchemy.exc import IntegrityError
 
+logging.basicConfig(
+    format='ts=%(asctime)s,%(msecs)03d level=%(levelname)s line=%(lineno)d msg="%(message)s"',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.INFO)
 
