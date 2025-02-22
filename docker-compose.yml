@@ -7,6 +7,7 @@ services:
       - ./parsers.conf:/fluent-bit/etc/my_parsers.conf
       - /etc/machine-id:/etc/machine-id:ro
       - /var/log:/var/log
+      - /tmp:/local-up-cluster
     depends_on:
       - loki
     networks:
